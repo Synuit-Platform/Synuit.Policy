@@ -1,0 +1,27 @@
+{
+  "Name": "exchange",
+  "Description": "Defines authorization policies for use with Exchange Api, AdminUI & Dashboard.",
+  "Roles": [
+    {
+      "Name": "admin",
+      //"Subjects": [ "1", "2" ],
+      "IdentityRoles": [ "admin" ]
+    },
+    {
+      "Name": "publisher",
+      "Subjects": [ "3", "13" ],
+      "IdentityRoles": [ "RN" ]
+    },
+    {
+      "Name": "subscriber",
+      "Subjects": [],
+      "IdentityRoles": [ "customer" ]
+    }
+  ],
+  "Permissions": [
+    {
+      "Name": "ViewDashboard",
+      "Roles": [ "admin" ]
+    }
+  ]
+}

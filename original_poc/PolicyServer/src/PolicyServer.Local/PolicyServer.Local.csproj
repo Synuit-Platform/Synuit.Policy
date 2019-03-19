@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionPrefix>1.0.3</VersionPrefix>
+
+    <Authors>Brock Allen;Dominick Baier;Michele Leroux-Bustamante</Authors>
+    <Description>free OSS version of PolicyServer</Description>
+    <PackageId>PolicyServer.Local</PackageId>
+    <PackageTags>Authorization;Roles;Permissions</PackageTags>
+    <PackageIconUrl>http://policyserver.io/images/shield64.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/PolicyServer/PolicyServer.Local</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/PolicyServer/PolicyServer.Local/blob/release/LICENSE</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>

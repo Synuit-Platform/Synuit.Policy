@@ -1,0 +1,39 @@
+{
+  "Name": "hospital.demo",
+  "Description": "For use with demo hospital admin application.",
+  "Roles": [
+    {
+      "Name": "doctor",
+      "Subjects": [ "1", "2" ],
+      "IdentityRoles": [ "surgeon" ]
+    },
+    {
+      "Name": "nurse",
+      "Subjects": [ "3", "13" ],
+      "IdentityRoles": [ "RN" ]
+    },
+    {
+      "Name": "patient",
+      "Subjects": [],
+      "IdentityRoles": [ "customer" ]
+    }
+  ],
+  "Permissions": [
+    {
+      "Name": "SeePatients",
+      "Roles": [ "doctor", "nurse" ]
+    },
+    {
+      "Name": "PerformSurgery",
+      "Roles": [ "doctor" ]
+    },
+    {
+      "Name": "PrescribeMedication",
+      "Roles": [ "doctor", "nurse" ]
+    },
+    {
+      "Name": "RequestPainMedication",
+      "Roles": [ "patient" ]
+    }
+  ]
+}
