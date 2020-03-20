@@ -1,4 +1,4 @@
 # Synuit.Policy
-Policy as a Service - Application Roles and Permissions Management
+Enterprise Policy as a Service - Application/Policy Roles and Permissions Management
 
 ![Architecture](policy.jpg)
