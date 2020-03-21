@@ -7,9 +7,8 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 //
 using FluentAssertions;
-using Synuit.Platform.Policy.Models;
-using Synuit.Platform.Policy.Services;
-
+using Synuit.Platform.Auth.Policy.Models;
+using Synuit.Platform.Auth.Policy.Services;
 using System;
 using System.Threading.Tasks;
 using Xunit;

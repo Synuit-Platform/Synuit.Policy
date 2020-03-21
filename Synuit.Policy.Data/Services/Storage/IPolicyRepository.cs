@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
 
-namespace Synuit.Policy.Services.Storage
+namespace Synuit.Policy.Data.Services.Storage
 {
+   using Policy = Synuit.Platform.Auth.Policy.Models.Policy;
+
    /// <summary>
    ///
    /// </summary>
@@ -19,7 +21,7 @@ namespace Synuit.Policy.Services.Storage
       /// </summary>
       /// <param name="id"></param>
       /// <returns>Synuit.Policy.Models.Policy</returns>
-      Task<Platform.Policy.Models.Policy> GetPolicy(string id);
+      Task<Policy> GetPolicy(string id);
 
       /// <summary>
       ///
@@ -34,7 +36,7 @@ namespace Synuit.Policy.Services.Storage
       /// <param name="id"></param>
       /// <param name="policy"></param>
       /// <returns>bool</returns>
-      Task<bool> PutPolicy(string id, Platform.Policy.Models.Policy policy);
+      Task<bool> PutPolicy(string id, Policy policy);
 
       /// <summary>
       ///

@@ -2,11 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Synuit.Platform\Synuit.Platform.Bootstrap.Sdk\Synuit.Platform.Bootstrap.Sdk.csproj" />
+    <PackageReference Include="IdentityModel" Version="4.1.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Synuit.Platform\Synuit.Platform.Sdk\Synuit.Platform.Sdk.csproj" />
+  </ItemGroup>
+
+  
 
 </Project>

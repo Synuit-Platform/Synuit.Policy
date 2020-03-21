@@ -1,14 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Synuit.Platform.Auth.Types;
+
 //
-using Synuit.Policy.Services;
 using System;
 using System.Net;
 using System.Threading.Tasks;
 
 namespace Synuit.Policy.Controllers
 {
+   using Policy = Synuit.Platform.Auth.Policy.Models.Policy;
+
    /// <summary>
    ///
    /// </summary>
@@ -26,7 +29,7 @@ namespace Synuit.Policy.Controllers
       /// <param name="logger"></param>
       /// <param name="policyService"></param>
 
-      public PolicyController(ILogger logger, IPolicyService policyService)
+      public PolicyController(ILogger<PolicyController> logger, IPolicyService policyService)
       {
          _logger = logger;
          _policyService = policyService;
@@ -51,37 +54,36 @@ namespace Synuit.Policy.Controllers
          {
             if (!string.IsNullOrEmpty(id))
             {
-               Platform.Policy.Models.Policy json;
+               Policy json;
 
-               _logger.Information($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Request Policy: {id}", 2001);
+               _logger.LogInformation($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Request Policy: {id}", 2001);
 
                json = await _policyService.GetPolicy(id);
 
                if (json != null)
                {
-                  _logger.Information($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Policy for {id} returned successfully", 200);
+                  _logger.LogInformation($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Policy for {id} returned successfully", 200);
                   return Ok(json);
                }
                else
                {
-                  _logger.Warning($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Policy {id} does not exist in the Policy Repository", 404);
+                  _logger.LogWarning($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Policy {id} does not exist in the Policy Repository", 404);
                   return NotFound("Policy does not exist in the Policy Repository.");
                }
             }
             else
             {
-               _logger.Warning($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Policy Id // Name not recieved", 400);
+               _logger.LogWarning($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. Policy Id // Name not recieved", 400);
                return BadRequest("Policy Id//Name is required to search for the policy.");
             }
          }
          catch (Exception ex)
          {
-            _logger.Error($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. " + ex.ToString(), 500);
+            _logger.LogError($"{ControllerContext.ActionDescriptor.ControllerName}Controller.{ControllerContext.ActionDescriptor.ActionName}. " + ex.ToString(), 500);
             return StatusCode(500);
          }
       }
 
-     
       /// <summary>
       /// Post new/updated policy as identified by id to  policy repsository.
       /// </summary>
@@ -103,7 +105,7 @@ namespace Synuit.Policy.Controllers
       /// <response code="500">An Exception has occured</response>
       [HttpPost("{id}", Name = "PutPolicy"), DisableRequestSizeLimit]
       [ProducesResponseType((int)HttpStatusCode.InternalServerError)]          // --> 500
-      public async Task<IActionResult> PutPolicy(string id, [FromBody] Platform.Policy.Models.Policy policy)
+      public async Task<IActionResult> PutPolicy(string id, [FromBody] Policy policy)
       {
          var posted = await _policyService.PutPolicy(id, policy);
          if (posted)

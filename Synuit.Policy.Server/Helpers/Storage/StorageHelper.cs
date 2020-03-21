@@ -7,18 +7,17 @@ using System.Threading.Tasks;
 namespace Synuit.Policy.Helpers.Storage
 {
    /// <summary>
-   /// 
+   ///
    /// </summary>
-    public static class StorageHelper
-    {
+   public static class StorageHelper
+   {
       /// <summary>
-      /// 
+      ///
       /// </summary>
       /// <param name="services"></param>
       /// <param name="defaultScheme"></param>
       public static void AddStorage(this IServiceCollection services, string defaultScheme)
       {
-
       }
    }
 }

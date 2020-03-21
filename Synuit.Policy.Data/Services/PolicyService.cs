@@ -1,34 +1,39 @@
 ﻿using EasyCaching.Core;
-using Serilog;
-using Synuit.Policy.Services.Storage;
+using Microsoft.Extensions.Logging;
+using Synuit.Platform.Auth.Types;
+using Synuit.Policy.Data.Services.Storage;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Synuit.Policy.Services
+namespace Synuit.Policy.Data.Services
 {
+   using Policy = Synuit.Platform.Auth.Policy.Models.Policy;
+
    /// <summary>
    ///
    /// </summary>
    public class PolicyService : IPolicyService
    {
-      private ILogger _logger;
+      private ILogger<PolicyService> _logger;
       private IPolicyRepository _policyRepository;
 
       private IEasyCachingProvider _cacheProvider;
-     
 
       /// <summary>
       ///
       /// </summary>
-     
+
       /// <param name="policyRepository"></param>
       /// <param name="logger"></param>
       /// <param name="cacheProvider"></param>
-      public PolicyService(IPolicyRepository policyRepository, ILogger logger, IEasyCachingProvider cacheProvider)
+      public PolicyService(IPolicyRepository policyRepository, ILogger<PolicyService> logger, IEasyCachingProvider cacheProvider)
       {
-         _logger = logger;
-         _cacheProvider = cacheProvider;
+         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+         _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
+         _policyRepository = policyRepository ?? throw new ArgumentNullException(nameof(policyRepository));
+       
+       
          _policyRepository = policyRepository;
       }
 
@@ -38,7 +43,7 @@ namespace Synuit.Policy.Services
       /// <param name="id"></param>
       /// <param name="policy"></param>
       /// <returns></returns>
-      public async Task<bool> PutPolicy(string id, Platform.Policy.Models.Policy policy)
+      public async Task<bool> PutPolicy(string id, Policy policy)
       {
          var set = false;
          string methodName = $"{MethodBase.GetCurrentMethod().DeclaringType.FullName.Split('+')[0]}.{MethodBase.GetCurrentMethod().DeclaringType.FullName.Split('+')[1].Split('<', '>')[1]}";
@@ -49,11 +54,11 @@ namespace Synuit.Policy.Services
 
             if (set)
             {
-               await _cacheProvider.SetAsync<Platform.Policy.Models.Policy>(id, policy, TimeSpan.FromMinutes(15));
+               await _cacheProvider.SetAsync<Policy>(id, policy, TimeSpan.FromMinutes(15));
             }
             else
             {
-               _logger.Warning($"{methodName}. The metadata/Json passed for policy {id} was invalid");
+               _logger.LogWarning($"{methodName}. The metadata/Json passed for policy {id} was invalid");
             }
          }
 
@@ -65,13 +70,13 @@ namespace Synuit.Policy.Services
       /// </summary>
       /// <param name="id"></param>
       /// <returns></returns>
-      public async Task<Platform.Policy.Models.Policy> GetPolicy(string id)
+      public async Task<Policy> GetPolicy(string id)
       {
-         Platform.Policy.Models.Policy json;
+         Policy json;
 
          string methodName = $"{MethodBase.GetCurrentMethod().DeclaringType.FullName.Split('+')[0]}.{MethodBase.GetCurrentMethod().DeclaringType.FullName.Split('+')[1].Split('<', '>')[1]}";
 
-         var cachedValue = await _cacheProvider.GetAsync<Platform.Policy.Models.Policy>(id);
+         var cachedValue = await _cacheProvider.GetAsync<Policy>(id);
 
          if (cachedValue.Value == null)
          {
@@ -79,11 +84,11 @@ namespace Synuit.Policy.Services
 
             if (json != null)
             {
-               await _cacheProvider.SetAsync<Platform.Policy.Models.Policy>(id, json, TimeSpan.FromMinutes(15)); //$!!$ make expiry configurable
+               await _cacheProvider.SetAsync<Policy>(id, json, TimeSpan.FromMinutes(15)); //$!!$ make expiry configurable
             }
             else
             {
-               _logger.Warning($"{methodName}. Policy {id} does not exist in the repository", 404);
+               _logger.LogWarning($"{methodName}. Policy {id} does not exist in the repository", 404);
             }
          }
          else

@@ -7,21 +7,22 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 //
 using FluentAssertions;
-using Synuit.Platform.Policy.Models;
-using Synuit.Platform.Policy.Services;
+using Synuit.Platform.Auth.Policy.Models;
+using Synuit.Platform.Auth.Policy.Services;
 using System;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Synuit.Policy.Tests
 {
+   using Policy = Synuit.Platform.Auth.Policy.Models.Policy;
    public class PolicyTests
    {
-      private Platform.Policy.Models.Policy _policy;
+      private Policy _policy;
 
       public PolicyTests()
       {
-         _policy = new Platform.Policy.Models.Policy();
+         _policy = new Policy();
       }
 
       [Fact]

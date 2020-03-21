@@ -3,7 +3,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Synuit.Platform.Types;
+using Synuit.Platform.Auth.Types;
+
 
 namespace Host.AspNetCorePolicy
 {

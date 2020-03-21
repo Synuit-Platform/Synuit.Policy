@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Synuit.Policy
+namespace Synuit.Policy.Server
 {
    /// <summary>
    ///
@@ -16,28 +17,26 @@ namespace Synuit.Policy
       /// <summary>
       ///
       /// </summary>
-      public static IServiceProvider Provider { get; set; }
-
-      /// <summary>
-      ///
-      /// </summary>
       /// <param name="args"></param>
-      /// <returns></returns>
-      public static  void   Main(string[] args)
+      public static void Main(string[] args)
       {
-         Console.Title = "Synuit.Policy.Server - Authorization as a Service (AaaS)";
+         MainAsync(args).GetAwaiter().GetResult();
+      }
+
+      private static async Task MainAsync(string[] args)
+      {
+         Console.Title = "Synuit.Policy.Server - Enterprise Policy as a Service (EPaaS)";
          var seed = args.Any(x => x == SeedArgs);
          if (seed) args = args.Except(new[] { SeedArgs }).ToArray();
 
-         var host = BuildWebHost(args);
+         var host = CreateHostBuilder(args);
          // Uncomment this to seed upon startup, alternatively pass in `dotnet run /seed` to seed using CLI
          // await DbMigrationHelpers.EnsureSeedData(host);
          if (seed)
          {
-            
          }
 
-         host.Run();
+         await host.RunAsync();
       }
 
       /// <summary>
@@ -45,10 +44,10 @@ namespace Synuit.Policy
       /// </summary>
       /// <param name="args"></param>
       /// <returns></returns>
-      public static IWebHost BuildWebHost(string[] args) =>
-       WebHost.CreateDefaultBuilder(args)
-              .UseKestrel(c => c.AddServerHeader = true)
-              .UseStartup<Startup>()
+      public static IWebHost CreateHostBuilder(string[] args) =>
+          WebHost.CreateDefaultBuilder(args)
+          .UseKestrel(c => c.AddServerHeader = true)
+               .UseStartup<Startup>()
               //.UseSerilog()
               .Build();
    }

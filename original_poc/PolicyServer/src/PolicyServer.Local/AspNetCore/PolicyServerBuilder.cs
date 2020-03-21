@@ -36,7 +36,7 @@ namespace PolicyServer.Runtime.Client
         /// <returns></returns>
         public PolicyServerBuilder AddAuthorizationPermissionPolicies()
         {
-            Services.AddAuthorization();
+            Services.AddAuthorizationCore();
             Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             Services.AddTransient<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             Services.AddTransient<IAuthorizationHandler, PermissionHandler>();

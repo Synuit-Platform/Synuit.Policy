@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -17,7 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Synuit.Platform\Synuit.Platform.Bootstrap.Sdk\Synuit.Platform.Bootstrap.Sdk.csproj" />
+    <ProjectReference Include="..\..\..\Synuit.Platform\Synuit.Platform.Sdk\Synuit.Platform.Sdk.csproj" />
   </ItemGroup>
+
+  
 
 </Project>

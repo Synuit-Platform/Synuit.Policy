@@ -1,18 +1,39 @@
-﻿using Newtonsoft.Json;
-using Synuit.Policy.Services.Storage;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Synuit.Policy.Services.Policy.Storage
+namespace Synuit.Policy.Data.Services.Storage
 {
+   using Policy = Synuit.Platform.Auth.Policy.Models.Policy;
+
    /// <summary>
    ///
    /// </summary>
    public class PolicyFileStorageRepository : IPolicyRepository
    {
-      private readonly string _basePath = Startup.Configuration["StorageConfig:FileStorageConfig:RootContext"];
-      private readonly string _webRoot = Startup.Environment.ContentRootPath;
+      private readonly IConfiguration _configuration;
+      private readonly IHostingEnvironment _environment;
+      private readonly ILogger<PolicyFileStorageRepository> _logger;
+
+      private readonly string _basePath;
+      private readonly string _webRoot ;
       private const string _JSON_EXT = ".json";
+
+
+      public PolicyFileStorageRepository( IConfiguration configuration, IHostingEnvironment environment, ILogger<PolicyFileStorageRepository> logger)
+      {
+         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+         //
+         _basePath = _configuration["StorageConfig:FileStorageConfig:RootContext"];
+         _webRoot = _environment.ContentRootPath;
+
+      }
 
       /// <summary>
       ///
@@ -41,9 +62,9 @@ namespace Synuit.Policy.Services.Policy.Storage
       /// <param name="id"></param>
 
       /// <returns>Policy.Models.Policy></returns>
-      public async Task<Platform.Policy.Models.Policy> GetPolicy(string id)
+      public async Task<Policy> GetPolicy(string id)
       {
-         return JsonConvert.DeserializeObject<Platform.Policy.Models.Policy>(await this.GetPolicyJson(id));
+         return JsonConvert.DeserializeObject<Policy>(await this.GetPolicyJson(id));
       }
 
       /// <summary>
@@ -75,7 +96,7 @@ namespace Synuit.Policy.Services.Policy.Storage
       /// <param name="id"></param>
       /// <param name="policy"></param>
       /// <returns>bool</returns>
-      public async Task<bool> PutPolicy(string id, Platform.Policy.Models.Policy policy)
+      public async Task<bool> PutPolicy(string id, Policy policy)
       {
          try
          {

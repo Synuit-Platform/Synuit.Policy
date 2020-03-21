@@ -2,37 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using Host.AspNetCorePolicy;
-using IdentityModel;
-using IdentityModel.Client;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
-
-using Microsoft.AspNetCore.Authentication;
-using Synuit.Platform.Types;
-using Synuit.Platform.Identity.Runtime;
 
 namespace Host
 {
    public class Startup
    {
       private readonly IConfiguration _configuration = null;
-      private readonly IHostingEnvironment _environment = null;
+      private readonly IWebHostEnvironment _environment = null;
       private static bool _remote = false;
 
       public static bool Remote { get { return _remote; } }
-      
+
       public IConfiguration Configuration { get { return _configuration; } }
 
-      public Startup(IHostingEnvironment environment, IConfiguration configuration)
+      public Startup(IWebHostEnvironment environment, IConfiguration configuration)
       {
          _configuration = configuration;
          _environment = environment;
@@ -63,7 +52,7 @@ namespace Host
          else
          {
             _remote = true;
-            services.AddIdentityServerClient(_configuration, _environment);
+            services.AddIdentityServerClient(_configuration);
          }
 
          // this sets up the PolicyServer client library and policy provider - configuration is loaded from appsettings.json
@@ -75,7 +64,7 @@ namespace Host
          services.AddTransient<IAuthorizationHandler, MedicationRequirementHandler>();
       }
 
-      public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+      public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
       {
          app.UseDeveloperExceptionPage();
          app.UseAuthentication();

@@ -1,19 +1,16 @@
 ﻿using IdentityModel.Client;
-
-
+using Synuit.Platform.Utils;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using Synuit.Platform.Utility;
 
 namespace Synuit.Policy.Test
 {
    public class Program
    {
-      public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
+      public static void Main(string[] args) => MainAsync(args).GetAwaiter().GetResult();
 
-      private static async Task MainAsync()
+      private static async Task MainAsync(string[] args)
       {
          Console.WriteLine("TEST 1: CALL API WITH AS ANONYMOUS ... FAIL EXPECTED!");
 
@@ -30,8 +27,8 @@ namespace Synuit.Policy.Test
             request.Method = new HttpMethod("GET");
 
             request.RequestUri = new System.Uri(url, System.UriKind.RelativeOrAbsolute);
-    
-            var response =  await client.GetAsync(request.RequestUri);
+
+            var response = await client.GetAsync(request.RequestUri);
             if (!response.IsSuccessStatusCode)
             {
                Console.WriteLine(response.StatusCode);
@@ -40,18 +37,18 @@ namespace Synuit.Policy.Test
             }
             else
             {
-               Console.WriteLine(JsonUtil.FormatJson(response.Content.ToString()));
+               Console.WriteLine(JsonUtils.FormatJson(response.Content.ToString()));
                Console.Write("TEST 1 PASSED - NOT AS EXPECTED!");
                Console.ReadLine();
             }
 
             Console.WriteLine("TEST 2: CALL API WITH AS KNOWN CLIENT  ... PASS EXPECTED!");
 
-            // discover endpoints from metadata
-            var disco = await DiscoveryClient.GetAsync("https://localhost:5001");
+            var discoCache = new DiscoveryCache("https://localhost:5001");
+            var disco = await discoCache.GetAsync();
             if (disco.IsError)
             {
-               Console.Write(disco.Error+" ... press any key to continue ...");
+               Console.Write(disco.Error + " ... press any key to continue ...");
                Console.ReadKey();
                return;
             }
@@ -84,7 +81,6 @@ namespace Synuit.Policy.Test
             client = new HttpClient();
             client.SetBearerToken(tokenResponse.AccessToken);
 
-
             using (var request2 = new HttpRequestMessage())
             {
                request2.Method = new HttpMethod("GET");
@@ -100,7 +96,7 @@ namespace Synuit.Policy.Test
                }
                else
                {
-                  Console.WriteLine(JsonUtil.FormatJson(await response2.Content.ReadAsStringAsync()));
+                  Console.WriteLine(JsonUtils.FormatJson(await response2.Content.ReadAsStringAsync()));
                   Console.Write("TEST 2 PASSED - AS EXPECTED!");
                   Console.ReadLine();
                }
