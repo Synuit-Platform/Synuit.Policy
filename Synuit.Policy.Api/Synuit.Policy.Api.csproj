@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/Synuit-Platform/Synuit.Policy</RepositoryUrl>
+    <RepositoryType>C#</RepositoryType>
+    <PackageProjectUrl>https://github.com/Synuit-Platform/Synuit.Policy</PackageProjectUrl>
+    <PackageIcon>synuit1.png</PackageIcon>
+    <PackageIconUrl />
+    <Copyright>Copyright © 2018-2020 Synuit Software</Copyright>
+    <Authors>Team Synuit</Authors>
+    <Company>Synuit Software</Company>
+    <Product>Enterprise Policy as a Service (EPaaS)</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +20,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Synuit.Platform\Synuit.Platform.Sdk\Synuit.Platform.Sdk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\files\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\files\synuit1.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
