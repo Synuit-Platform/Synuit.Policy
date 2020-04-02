@@ -1,17 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
-using Serilog;
 using Synuit.Platform.Auth.Types;
 using Synuit.Policy.Data.Services;
 using Synuit.Policy.Data.Services.Storage;
-using Synuit.Toolkit.Infra.Extensions;
+using Synuit.Toolkit.Infra.Helpers;
 using System;
 using System.IO;
 using System.Reflection;
@@ -23,59 +24,62 @@ namespace Synuit.Policy.Server
    /// </summary>
    public class Startup
    {
-      /// <summary>
-      ///
-      /// </summary>
-      public static IConfiguration Configuration { get; private set; }
+      private readonly IConfiguration _configuration;
+      private readonly IWebHostEnvironment _environment;
+      private ILogger<Startup> _logger;
+      private IServiceProvider _provider;
+ 
+      private StartupConfig _startupConfig;
 
-      /// <summary>
-      ///
-      /// </summary>
-      [Obsolete]
-      public static IHostingEnvironment Environment { get; private set; }
+      public IConfiguration Configuration { get { return _configuration; } }
 
-      /// <summary>
-      ///
-      /// </summary>
-      /// <param name="environment"></param>
-
-      [Obsolete]
-      public Startup(IHostingEnvironment environment)
+      public Startup(IWebHostEnvironment environment, IConfiguration configuration)
       {
-         Environment = environment;
-         Configuration = BuildConfiguration();
+         _configuration = configuration;
+         _environment = environment;
+         //
+         _startupConfig = StartupHelper.LoadStartupConfig(_configuration);
       }
 
       /// <summary>
       /// This method gets called by the runtime. Use this method to add services to the container.
       /// </summary>
       /// <param name="services"></param>
-      [Obsolete]
       public void ConfigureServices(IServiceCollection services)
       {
-         services.AddControllersWithViews(setupAction =>
-         {
-            setupAction.ReturnHttpNotAcceptable = true;
-         })
-            .AddNewtonsoftJson(setupAction =>
-            {
-               setupAction.SerializerSettings.ContractResolver =
-                  new CamelCasePropertyNamesContractResolver();
-            })
-         .AddXmlDataContractSerializerFormatters()
-         .AddMessagePackFormatters()
-         .AddApiExplorer()
-         .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-         //
-         services.AddApiVersioning();
-         //
+         var provider = services.BuildServiceProvider();
+         _provider = provider;
+         _logger = provider.GetRequiredService<ILogger<Startup>>();
 
-         services.AddAuthorization(); // added 11/21/18 tac
+         _logger.LogDebug("Adding Synuit.Context.Server DI container services in " + nameof(Startup));
+
+
+         // --> add controllers and common Api setup (Synuit.Toolkit)
+         services.AddControllersAndCommonServices
+            (
+               _configuration, 
+               _startupConfig, 
+               apiTitle: "Synuit Policy Server", 
+               apiVersion: "v1", 
+               withViews: true
+               );
+
+         //services = (_startupConfig.ExecutionEngine) ? services.AddExecutionEngine(_configuration) : services; services in " + nameof(Startup));
+
+        
+
+         ////// --> add database / storage (SEE EXTENSIONS BELOW)
+         ////services.ConfigureDatabases(this._configuration, provider);
+
+         ////// --> add main services for api (SEE EXTENSIONS BELOW)
+         ////services.AddServices(this._configuration);
+
+
 
          // --> Add authentication
          if (Configuration["ApiAuthConfig:AuthType"] == "Oidc")
          {
-            services.AddAuthenticationForApi(Configuration, Environment);
+            services.AddAuthenticationForApi(Configuration, _environment);
          }
          // --> In-Memory Cache
          services.AddEasyCaching(setupAction =>
@@ -83,31 +87,14 @@ namespace Synuit.Policy.Server
             setupAction.UseInMemory();
          });
 
-         var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-         // Set the comments path for the Swagger JSON and UI.
-         var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
-         //
-         services.AddSwaggerGen(c =>
-         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Synuit Policy Server", Version = "v1" });
-
-            c.IncludeXmlComments(xmlPath);
-         });
-         //
-         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+      
+ 
 
          services.AddSingleton<IPolicyRepository, PolicyFileStorageRepository>();
          services.AddSingleton<IPolicyService, PolicyService>();
-         services.AddSingleton<Serilog.ILogger>(Log.Logger);
+         
 
-         services.Configure<CookiePolicyOptions>(options =>
-         {
-            // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-            options.CheckConsentNeeded = context => true;
-            options.MinimumSameSitePolicy = SameSiteMode.None;
-         });
+         _logger.LogDebug("Completed adding Synuit.Policy.Server DI container services in " + nameof(Startup));
       }
 
       /// <summary>
@@ -115,60 +102,18 @@ namespace Synuit.Policy.Server
       /// </summary>
       /// <param name="app"></param>
       /// <param name="env"></param>
-      [Obsolete]
-      public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+      public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
       {
-         // global exception handler
-         app.UseExceptionHandler(appBuilder =>
-         {
-            appBuilder.Run(async context =>
-            {
-               var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
-
-               if (exceptionHandlerFeature != null)
-               {
-                  var logger = Log.Logger;
-                  logger.Error(exceptionHandlerFeature.Error.ToString());
-               }
-
-               context.Response.StatusCode = 500;
-               await context.Response.WriteAsync("An unexpected error occurred. Please try again later.");
-            });
-         });
+         
          //
          if (Configuration["ApiAuthConfig:AuthType"] == "Oidc")
          {
             app.UseAuthentication();
          }
-         //
-         if (!env.IsProduction())
-         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-               c.SwaggerEndpoint("/swagger/v1/swagger.json", "Synuit Policy Server Api - V1");
-               c.RoutePrefix = string.Empty;
-            });
-         }
-         //
-         if (env.IsDevelopment())
-         {
-            app.UseDeveloperExceptionPage();
-            app.UseBrowserLink();
-            app.UseDatabaseErrorPage();
-         }
-         else
-         {
-            app.UseExceptionHandler("/Home/Error");
-            app.UseHsts();
-         }
-         app.UseStaticFiles();
 
-         app.UseHttpsRedirection();
+         app.ConfigureApplication(env, _configuration, _startupConfig, _logger);
 
-         app.UseRouting();
-
-         app.UseAuthorization();
+        
 
          app.UseEndpoints(endpoints =>
          {
@@ -178,32 +123,6 @@ namespace Synuit.Policy.Server
          });
       }
 
-      /// <summary>
-      /// This method gets called by the runtime. Use this method to configure the global Serilog logger.
-      /// </summary>
-      [Obsolete]
-      private IConfiguration BuildConfiguration()
-      {
-         var builder = new ConfigurationBuilder()
-         .SetBasePath(Environment.ContentRootPath)
-         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-         .AddJsonFile($"appsettings.{Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-         .AddEnvironmentVariables();
-         //
-         if (Environment.IsDevelopment())
-         {
-            builder.AddUserSecrets<Startup>();
-         }
-         //
-         var configuration = builder.Build();
-         //
-         Log.Logger = new LoggerConfiguration()
-             .ReadFrom.Configuration(configuration)
-             .CreateLogger();
-         //
-         AppDomain.CurrentDomain.ProcessExit += (s, e) => Log.CloseAndFlush();
-
-         return configuration;
-      }
+     
    }
 }

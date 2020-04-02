@@ -1,54 +1,61 @@
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+
+using Synuit.Toolkit.Infra.Composition.Types;
+using Synuit.Toolkit.Infra.Helpers;
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Synuit.Policy.Server
 {
    /// <summary>
-   ///
+   /// 
    /// </summary>
    public class Program
    {
-      private const string SeedArgs = "/seed";
-
-      /// <summary>
-      ///
-      /// </summary>
-      /// <param name="args"></param>
-      public static void Main(string[] args)
+      private static void Main(string[] args)
       {
-         MainAsync(args).GetAwaiter().GetResult();
-      }
+         Func<IHostBuilder> builderFunc() => () => CreateHostBuilder(args);
 
-      private static async Task MainAsync(string[] args)
-      {
-         Console.Title = "Synuit.Policy.Server - Enterprise Policy as a Service (EPaaS)";
-         var seed = args.Any(x => x == SeedArgs);
-         if (seed) args = args.Except(new[] { SeedArgs }).ToArray();
-
-         var host = CreateHostBuilder(args);
-         // Uncomment this to seed upon startup, alternatively pass in `dotnet run /seed` to seed using CLI
-         // await DbMigrationHelpers.EnsureSeedData(host);
-         if (seed)
+         Func<bool> bootstrapFunc(IHost host, IServiceScope scope, ILogger logger) => () =>
          {
-         }
+            // migrate the database.  Best practice = in Main, using service scope
 
-         await host.RunAsync();
+            ////using (var context = scope.ServiceProvider.GetRequiredService<IFactory<CaasContext>>().Create())
+            ////{
+            ////   // for demo purposes, delete the database & migrate on startup so
+            ////   // we can start with a clean slate
+            ////   // $!!$ tac - for dev / test
+            ////   context.Database.EnsureDeleted();
+
+            ////   context.Database.Migrate();
+            ////}
+
+            return true;
+         };
+
+         ProgramMainHelper.Bootstrap<Program>
+           (args,
+           appTitle: "Enterprise Policy as a Service (EPaaS)",
+           customBuilder: builderFunc()
+           //customBootstrap: bootstrapFunc
+           );
       }
-
       /// <summary>
-      ///
+      /// 
       /// </summary>
       /// <param name="args"></param>
       /// <returns></returns>
-      public static IWebHost CreateHostBuilder(string[] args) =>
-          WebHost.CreateDefaultBuilder(args)
-          .UseKestrel(c => c.AddServerHeader = true)
-               .UseStartup<Startup>()
-              //.UseSerilog()
-              .Build();
+      public static IHostBuilder CreateHostBuilder(string[] args) =>
+          Host.CreateDefaultBuilder(args)
+              .ConfigureWebHostDefaults(options =>
+              {
+                
+                 options.UseSerilog();
+                 options.ConfigureServices(p => p.AddSingleton(Log.Logger));
+                 options.UseStartup<Startup>();
+              });
    }
 }

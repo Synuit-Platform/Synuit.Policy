@@ -5,10 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyCaching.InMemory" Version="0.8.6" />
+    <PackageReference Include="EasyCaching.InMemory" Version="0.8.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Synuit.Platform\Synuit.Platform.Sdk\Synuit.Platform.Sdk.csproj" />
+    <ProjectReference Include="..\..\Synuit.Toolkit\Synuit.Toolkit\Synuit.Toolkit.csproj" />
   </ItemGroup>
 
 </Project>

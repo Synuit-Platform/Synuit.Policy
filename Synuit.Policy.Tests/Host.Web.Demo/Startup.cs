@@ -1,20 +1,23 @@
-﻿// Copyright (c) Brock Allen, Dominick Baier, Michele Leroux Bustamante. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Host.AspNetCorePolicy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Host
 {
    public class Startup
    {
-      private readonly IConfiguration _configuration = null;
-      private readonly IWebHostEnvironment _environment = null;
+      private readonly IConfiguration _configuration ;
+      private readonly IWebHostEnvironment _environment;
       private static bool _remote = false;
 
       public static bool Remote { get { return _remote; } }
@@ -27,9 +30,10 @@ namespace Host
          _environment = environment;
       }
 
+      // This method gets called by the runtime. Use this method to add services to the container.
       public void ConfigureServices(IServiceCollection services)
       {
-         services.AddMvc(options =>
+         services.AddControllersWithViews(options =>
          {
             // this sets up a default authorization policy for the application
             // in this case, authenticated users are required (besides controllers/actions that have [AllowAnonymous]
@@ -62,20 +66,34 @@ namespace Host
 
          // this adds the necessary handler for our custom medication requirement
          services.AddTransient<IAuthorizationHandler, MedicationRequirementHandler>();
+
       }
 
+      // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
       public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
       {
          app.UseDeveloperExceptionPage();
+         
          app.UseAuthentication();
-
+         
+         //app.UseHttpsRedirection();
          // add this middleware to make roles and permissions available as claims
          // this is mainly useful for using the classic [Authorize(Roles="foo")] and IsInRole functionality
          // this is not needed if you use the client library directly or the new policy-based authorization framework in ASP.NET Core
          app.UsePolicyServerClaims();
-
+         
          app.UseStaticFiles();
-         app.UseMvcWithDefaultRoute();
+
+         app.UseRouting();
+
+         app.UseAuthorization();
+
+         app.UseEndpoints(endpoints =>
+         {
+            endpoints.MapControllerRoute(
+                   name: "default",
+                   pattern: "{controller=Home}/{action=Index}/{id?}");
+         });
       }
    }
 }
