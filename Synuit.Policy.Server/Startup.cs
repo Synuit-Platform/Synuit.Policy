@@ -111,6 +111,7 @@ namespace Synuit.Policy.Server
             app.UseAuthentication();
          }
 
+         // --> See Synuit.Toolkit
          app.ConfigureApplication(env, _configuration, _startupConfig, _logger);
 
         
