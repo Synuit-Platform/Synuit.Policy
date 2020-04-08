@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
 using Synuit.Toolkit.Infra.Composition.Types;
 using Synuit.Toolkit.Infra.Helpers;
+using Synuit.Toolkit.Infra.Startup;
 using System;
+using System.IO;
 
 namespace Synuit.Policy.Server
 {
@@ -50,12 +53,16 @@ namespace Synuit.Policy.Server
       /// <returns></returns>
       public static IHostBuilder CreateHostBuilder(string[] args) =>
           Host.CreateDefaultBuilder(args)
-              .ConfigureWebHostDefaults(options =>
-              {
-                
-                 options.UseSerilog();
-                 options.ConfigureServices(p => p.AddSingleton(Log.Logger));
-                 options.UseStartup<Startup>();
-              });
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+               var env = hostingContext.HostingEnvironment;
+               config.BuildConfiguration(env, Directory.GetCurrentDirectory(), args);
+            })
+            .ConfigureWebHostDefaults(options =>
+            {
+               options.UseSerilog();
+               options.ConfigureServices(p => p.AddSingleton(Log.Logger));
+               options.UseStartup<Startup>();
+            });
    }
 }

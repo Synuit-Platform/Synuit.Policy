@@ -1,20 +1,13 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Newtonsoft.Json.Serialization;
 using Synuit.Platform.Auth.Types;
 using Synuit.Policy.Data.Services;
 using Synuit.Policy.Data.Services.Storage;
-using Synuit.Toolkit.Infra.Helpers;
+using Synuit.Toolkit.Infra.Startup;
 using System;
-using System.IO;
 using System.Reflection;
 
 namespace Synuit.Policy.Server
@@ -28,8 +21,8 @@ namespace Synuit.Policy.Server
       private readonly IWebHostEnvironment _environment;
       private ILogger<Startup> _logger;
       private IServiceProvider _provider;
- 
-      private StartupConfig _startupConfig;
+
+      private IStartupManager _startup;
 
       public IConfiguration Configuration { get { return _configuration; } }
 
@@ -38,7 +31,13 @@ namespace Synuit.Policy.Server
          _configuration = configuration;
          _environment = environment;
          //
-         _startupConfig = StartupHelper.LoadStartupConfig(_configuration);
+         var startup = new StartupManager();
+         //
+         startup.Configuration = StartupHelper.LoadStartupConfig(_configuration);
+         // --> Set the comments path for the Swagger JSON and UI.
+         startup.AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+         startup.Path = AppContext.BaseDirectory;
+         _startup = startup;
       }
 
       /// <summary>
@@ -53,28 +52,17 @@ namespace Synuit.Policy.Server
 
          _logger.LogDebug("Adding Synuit.Context.Server DI container services in " + nameof(Startup));
 
-
          // --> add controllers and common Api setup (Synuit.Toolkit)
          services.AddControllersAndCommonServices
-            (
-               _configuration, 
-               _startupConfig, 
-               apiTitle: "Synuit Policy Server", 
-               apiVersion: "v1", 
-               withViews: true
-               );
+            (_configuration, _startup, apiTitle: "Synuit Policy Server", apiVersion: "v1", withViews: true);
 
          //services = (_startupConfig.ExecutionEngine) ? services.AddExecutionEngine(_configuration) : services; services in " + nameof(Startup));
-
-        
 
          ////// --> add database / storage (SEE EXTENSIONS BELOW)
          ////services.ConfigureDatabases(this._configuration, provider);
 
          ////// --> add main services for api (SEE EXTENSIONS BELOW)
          ////services.AddServices(this._configuration);
-
-
 
          // --> Add authentication
          if (Configuration["ApiAuthConfig:AuthType"] == "Oidc")
@@ -87,12 +75,8 @@ namespace Synuit.Policy.Server
             setupAction.UseInMemory();
          });
 
-      
- 
-
          services.AddSingleton<IPolicyRepository, PolicyFileStorageRepository>();
          services.AddSingleton<IPolicyService, PolicyService>();
-         
 
          _logger.LogDebug("Completed adding Synuit.Policy.Server DI container services in " + nameof(Startup));
       }
@@ -104,7 +88,6 @@ namespace Synuit.Policy.Server
       /// <param name="env"></param>
       public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
       {
-         
          //
          if (Configuration["ApiAuthConfig:AuthType"] == "Oidc")
          {
@@ -112,9 +95,7 @@ namespace Synuit.Policy.Server
          }
 
          // --> See Synuit.Toolkit
-         app.ConfigureApplication(env, _configuration, _startupConfig, _logger);
-
-        
+         app.ConfigureApplication(env, _configuration, _startup, _logger);
 
          app.UseEndpoints(endpoints =>
          {
@@ -123,7 +104,5 @@ namespace Synuit.Policy.Server
                    pattern: "{controller=Home}/{action=Index}/{id?}");
          });
       }
-
-     
    }
 }
