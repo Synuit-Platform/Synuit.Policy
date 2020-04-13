@@ -53,16 +53,15 @@ namespace Synuit.Policy.Server
          _logger.LogDebug("Adding Synuit.Context.Server DI container services in " + nameof(Startup));
 
          // --> add controllers and common Api setup (Synuit.Toolkit)
-         services.AddControllersAndCommonServices
-            (_configuration, _startup, apiTitle: "Synuit Policy Server", apiVersion: "v1", withViews: true);
-
-         //services = (_startupConfig.ExecutionEngine) ? services.AddExecutionEngine(_configuration) : services; services in " + nameof(Startup));
-
-         ////// --> add database / storage (SEE EXTENSIONS BELOW)
-         ////services.ConfigureDatabases(this._configuration, provider);
-
-         ////// --> add main services for api (SEE EXTENSIONS BELOW)
-         ////services.AddServices(this._configuration);
+         services.AddControllersAndPlatformServices
+         (
+            _provider, 
+            _configuration, 
+            _startup, 
+            apiTitle: "Synuit Policy Server", 
+            apiVersion: "v1", 
+            withViews: true
+         );
 
          // --> Add authentication
          if (Configuration["ApiAuthConfig:AuthType"] == "Oidc")

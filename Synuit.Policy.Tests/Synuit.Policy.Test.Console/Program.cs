@@ -44,7 +44,7 @@ namespace Synuit.Policy.Test
 
             Console.WriteLine("TEST 2: CALL API WITH AS KNOWN CLIENT  ... PASS EXPECTED!");
 
-            var discoCache = new DiscoveryCache("https://localhost:5001");
+            var discoCache = new DiscoveryCache("https://idp.test.syid.io");
             var disco = await discoCache.GetAsync();
             if (disco.IsError)
             {
