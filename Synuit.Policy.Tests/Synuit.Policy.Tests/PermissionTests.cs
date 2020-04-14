@@ -16,7 +16,7 @@ namespace Synuit.Policy.Tests
 {
    public class PermissionTests
    {
-      private Permission _perm;
+      private readonly Permission _perm;
 
       public PermissionTests()
       {

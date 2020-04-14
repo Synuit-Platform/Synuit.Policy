@@ -17,7 +17,7 @@ namespace Synuit.Policy.Tests
 {
     public class RoleTests
     {
-        Role _role;
+      readonly Role _role;
 
         public RoleTests()
         {

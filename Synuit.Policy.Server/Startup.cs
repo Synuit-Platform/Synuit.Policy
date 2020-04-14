@@ -22,7 +22,7 @@ namespace Synuit.Policy.Server
       private ILogger<Startup> _logger;
       private IServiceProvider _provider;
 
-      private IStartupManager _startup;
+      private readonly IStartupManager _startup;
 
       public IConfiguration Configuration { get { return _configuration; } }
 
@@ -31,12 +31,14 @@ namespace Synuit.Policy.Server
          _configuration = configuration;
          _environment = environment;
          //
-         var startup = new StartupManager();
-         //
-         startup.Configuration = StartupHelper.LoadStartupConfig(_configuration);
-         // --> Set the comments path for the Swagger JSON and UI.
-         startup.AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-         startup.Path = AppContext.BaseDirectory;
+         var startup = new StartupManager
+         {
+            //
+            Configuration = StartupHelper.LoadStartupConfig(_configuration),
+            // --> Set the comments path for the Swagger JSON and UI.
+            AssemblyName = Assembly.GetExecutingAssembly().GetName().Name,
+            Path = AppContext.BaseDirectory
+         };
          _startup = startup;
       }
 

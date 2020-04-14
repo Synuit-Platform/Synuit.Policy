@@ -18,7 +18,7 @@ namespace Synuit.Policy.Tests
    using Policy = Synuit.Platform.Auth.Policy.Models.Policy;
    public class PolicyTests
    {
-      private Policy _policy;
+      private readonly Policy _policy;
 
       public PolicyTests()
       {

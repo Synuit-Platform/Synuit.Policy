@@ -12,10 +12,11 @@ namespace Synuit.Policy.Tests
         public static ClaimsPrincipal Create(string sub, 
             IEnumerable<string> roles = null, IEnumerable<Claim> claims = null)
         {
-            var list = new List<Claim>();
-            list.Add(new Claim("sub", sub));
+         var list = new List<Claim>
+         { new Claim("sub", sub)
+         };
 
-            if (roles != null)
+         if (roles != null)
             {
                 list.AddRange(roles.Select(x => new Claim("role", x)));
             }
